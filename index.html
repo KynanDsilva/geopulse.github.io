@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoPulse | Interactive Project Pitch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Slate & Sky Blue -->
+    <!-- Application Structure Plan: A single-page, scrolling dashboard structure is used to guide the user through a narrative flow: from the problem to our solution, followed by an interactive demo, feature breakdown, impact analysis, and a future roadmap. This structure is more engaging than a static report, allowing stakeholders to quickly grasp the project's value proposition and core functionality. The interactive dashboard is the centerpiece, providing a hands-on feel for the product's main feature without needing a live API. -->
+    <!-- Visualization & Content Choices: 
+        - The Problem/Solution is presented using a side-by-side card layout with icons (Unicode) for quick visual comparison. Goal: Inform. Method: HTML/CSS.
+        - Core functionality is demonstrated via an interactive dashboard. Goal: Compare & Organize. Method: Bar Chart (Chart.js) and dynamic HTML list. Interaction: User clicks on region/filter buttons, JS updates chart data and list content. Justification: This simulates the app's core value—exploring location-based trends.
+        - Target Audience is shown with a Doughnut chart. Goal: Inform/Proportions. Method: Chart.js. Interaction: Hover tooltips. Justification: A doughnut chart is ideal for showing the composition of the target user base.
+        - Future Scope is visualized as a CSS-based timeline. Goal: Show Change/Plan. Method: HTML/CSS. Justification: A visual roadmap is more professional and easier to digest than a bullet list.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .nav-link {
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .nav-link:hover {
+            color: #0284c7;
+            transform: translateY(-2px);
+        }
+        .active-btn {
+            background-color: #0284c7;
+            color: white;
+        }
+        .inactive-btn {
+            background-color: #e2e8f0;
+            color: #475569;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 9999px;
+            background-color: #e2e8f0;
+            border: 4px solid #f8fafc;
+        }
+        .timeline-item:first-child::after {
+            content: '';
+            position: absolute;
+            left: -2.25rem;
+            top: 50%;
+            width: 2px;
+            height: 50%;
+            background-color: #cbd5e1;
+        }
+         .timeline-item:not(:first-child):not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: -2.25rem;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background-color: #cbd5e1;
+        }
+         .timeline-item:last-child::after {
+            content: '';
+            position: absolute;
+            left: -2.25rem;
+            bottom: 50%;
+            width: 2px;
+            height: 50%;
+            background-color: #cbd5e1;
+        }
+        .timeline-item.active::before {
+            background-color: #0284c7;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-sky-600">GeoPulse 🌍</h1>
+            <div class="hidden md:flex space-x-8">
+                <a onclick="document.getElementById('problem').scrollIntoView({behavior:'smooth'})" class="nav-link font-medium text-slate-600">The Problem</a>
+                <a onclick="document.getElementById('dashboard').scrollIntoView({behavior:'smooth'})" class="nav-link font-medium text-slate-600">Interactive Demo</a>
+                <a onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})" class="nav-link font-medium text-slate-600">Features</a>
+                <a onclick="document.getElementById('impact').scrollIntoView({behavior:'smooth'})" class="nav-link font-medium text-slate-600">Impact</a>
+                <a onclick="document.getElementById('future').scrollIntoView({behavior:'smooth'})" class="nav-link font-medium text-slate-600">Roadmap</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        <section class="text-center mb-24">
+            <h2 class="text-5xl md:text-6xl font-bold text-slate-800 leading-tight">See what the world is talking about,</h2>
+            <h2 class="text-5xl md:text-6xl font-bold text-sky-600 leading-tight mb-4">right where it's happening.</h2>
+            <p class="max-w-3xl mx-auto text-lg text-slate-500">GeoPulse is an interactive, map-based platform to discover trending news and tweets regionally, cutting through the noise of global social media feeds.</p>
+        </section>
+
+        <section id="problem" class="mb-24 scroll-mt-24">
+            <div class="text-center mb-12">
+                <h3 class="text-4xl font-bold text-slate-800">The Challenge & Our Solution</h3>
+                <p class="text-lg text-slate-500 mt-2">Bridging the gap between global data and local relevance.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
+                    <h4 class="text-2xl font-bold mb-4">The Problem 😵‍💫</h4>
+                    <ul class="space-y-4 text-slate-600">
+                        <li class="flex items-start"><span class="mr-3 text-xl">🌪️</span> <div><strong>Information Overload:</strong> Youth are overwhelmed by irrelevant global content on social media.</div></li>
+                        <li class="flex items-start"><span class="mr-3 text-xl">🧩</span> <div><strong>Complex Interfaces:</strong> Elders and casual users find existing news apps complicated and cluttered.</div></li>
+                        <li class="flex items-start"><span class="mr-3 text-xl">🗺️</span> <div><strong>Lack of Geo-Focus:</strong> Major platforms show what's trending globally, not what's important in your city or state.</div></li>
+                    </ul>
+                </div>
+                <div class="bg-sky-600 text-white p-8 rounded-2xl shadow-lg">
+                    <h4 class="text-2xl font-bold mb-4">The GeoPulse Solution ✨</h4>
+                    <ul class="space-y-4">
+                        <li class="flex items-start"><span class="mr-3 text-xl">📍</span> <div><strong>Visual & Intuitive:</strong> An interactive map is the primary interface. Click a region to explore its trends instantly.</div></li>
+                        <li class="flex items-start"><span class="mr-3 text-xl">🎯</span> <div><strong>Simple & Accessible:</strong> A clean, uncluttered design focused on one thing: delivering location-specific trends.</div></li>
+                        <li class="flex items-start"><span class="mr-3 text-xl">🔍</span> <div><strong>Hyper-Local Focus:</strong> Discover real-time trending topics for any country, state, or city you choose.</div></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="dashboard" class="mb-24 scroll-mt-24">
+            <div class="text-center mb-12">
+                <h3 class="text-4xl font-bold text-slate-800">Interactive Demo</h3>
+                <p class="text-lg text-slate-500 mt-2">Experience a simplified version of GeoPulse. Select a region and filter by category.</p>
+            </div>
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-slate-200">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="md:w-1/4">
+                        <h4 class="font-bold text-lg mb-2">1. Select Region</h4>
+                        <div id="region-selector" class="flex flex-col space-y-2">
+                            <button class="region-btn w-full text-left p-3 rounded-lg transition-colors duration-200 active-btn" data-region="USA">🇺🇸 USA</button>
+                            <button class="region-btn w-full text-left p-3 rounded-lg transition-colors duration-200 inactive-btn" data-region="India">🇮🇳 India</button>
+                            <button class="region-btn w-full text-left p-3 rounded-lg transition-colors duration-200 inactive-btn" data-region="UK">🇬🇧 UK</button>
+                        </div>
+                        <h4 class="font-bold text-lg mb-2 mt-6">2. Filter by Category</h4>
+                        <div id="filter-selector" class="flex flex-wrap gap-2">
+                            <button class="filter-btn flex-grow px-3 py-2 rounded-lg transition-colors duration-200 active-btn" data-category="All">All</button>
+                            <button class="filter-btn flex-grow px-3 py-2 rounded-lg transition-colors duration-200 inactive-btn" data-category="Politics">Politics</button>
+                            <button class="filter-btn flex-grow px-3 py-2 rounded-lg transition-colors duration-200 inactive-btn" data-category="Sports">Sports</button>
+                            <button class="filter-btn flex-grow px-3 py-2 rounded-lg transition-colors duration-200 inactive-btn" data-category="Entertainment">Entertainment</button>
+                            <button class="filter-btn flex-grow px-3 py-2 rounded-lg transition-colors duration-200 inactive-btn" data-category="Local">Local</button>
+                        </div>
+                    </div>
+                    <div class="md:w-3/4">
+                        <h4 class="text-xl font-bold mb-4" id="trends-title">Trending in USA</h4>
+                        <div class="grid lg:grid-cols-2 gap-8">
+                             <div class="p-4 rounded-lg bg-slate-50">
+                                <h5 class="font-semibold mb-2 text-center">Trend Volume by Category</h5>
+                                <div class="chart-container h-64 md:h-auto">
+                                    <canvas id="trendsChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="p-4 rounded-lg bg-slate-50">
+                                <h5 class="font-semibold mb-2">Top Topics</h5>
+                                <ul id="trends-list" class="space-y-3 h-64 md:h-full overflow-y-auto">
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="features" class="mb-24 scroll-mt-24">
+            <div class="text-center mb-12">
+                <h3 class="text-4xl font-bold text-slate-800">Core Features</h3>
+                <p class="text-lg text-slate-500 mt-2">The tools we provide to make news discovery simple and powerful.</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200 text-center">
+                    <div class="text-4xl mb-4">🌍</div>
+                    <h4 class="text-xl font-bold mb-2">Interactive Map</h4>
+                    <p class="text-slate-600">Select any country, state, or city to instantly view local trends and headlines.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200 text-center">
+                    <div class="text-4xl mb-4">🔥</div>
+                    <h4 class="text-xl font-bold mb-2">Real-Time Topics</h4>
+                    <p class="text-slate-600">Powered by the Twitter/X API, see what's trending the moment it happens.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200 text-center">
+                    <div class="text-4xl mb-4">🎯</div>
+                    <h4 class="text-xl font-bold mb-2">Smart Filters</h4>
+                    <p class="text-slate-600">Narrow down results by categories like Politics, Sports, and Entertainment.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200 text-center">
+                    <div class="text-4xl mb-4">🌐</div>
+                    <h4 class="text-xl font-bold mb-2">Multi-Language</h4>
+                    <p class="text-slate-600">Built for a global audience with support for multiple languages to ensure inclusivity.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200 text-center">
+                    <div class="text-4xl mb-4">📱</div>
+                    <h4 class="text-xl font-bold mb-2">Cross-Platform</h4>
+                    <p class="text-slate-600">Seamless experience on both web and mobile app platforms.</p>
+                </div>
+                 <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200 text-center">
+                    <div class="text-4xl mb-4">⚙️</div>
+                    <h4 class="text-xl font-bold mb-2">Modern Tech Stack</h4>
+                    <p class="text-slate-600">Built with robust technologies like React, Node.js, and Mapbox for a scalable solution.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="impact" class="mb-24 scroll-mt-24">
+            <div class="text-center mb-12">
+                <h3 class="text-4xl font-bold text-slate-800">Impact & Use Cases</h3>
+                <p class="text-lg text-slate-500 mt-2">Who we're helping and how.</p>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-8 items-center">
+                <div class="space-y-6">
+                     <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
+                        <h4 class="text-xl font-bold">For Everyone</h4>
+                        <p class="text-slate-600 mt-1">Makes global trends locally accessible, promotes digital awareness across age groups, and encourages community engagement.</p>
+                    </div>
+                     <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
+                        <h4 class="text-xl font-bold">For Professionals</h4>
+                        <p class="text-slate-600 mt-1">Journalists can track local sentiment, students can research regional issues, and travelers can check the local buzz before visiting.</p>
+                    </div>
+                </div>
+                <div>
+                     <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200">
+                        <h4 class="text-lg font-bold text-center mb-4">Target Audience Focus</h4>
+                        <div class="chart-container h-64 sm:h-80">
+                            <canvas id="audienceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="future" class="scroll-mt-24">
+            <div class="text-center mb-12">
+                <h3 class="text-4xl font-bold text-slate-800">Future Roadmap</h3>
+                <p class="text-lg text-slate-500 mt-2">Our vision for evolving GeoPulse.</p>
+            </div>
+            <div class="max-w-3xl mx-auto">
+                 <div class="relative pl-12">
+                     <div class="timeline-item active relative pb-12">
+                         <h4 class="text-xl font-bold">Sentiment Analysis 📊</h4>
+                         <p class="text-slate-600">Integrate AI to classify tweets and news as positive, negative, or neutral, providing deeper insight into local sentiment.</p>
+                     </div>
+                     <div class="timeline-item relative pb-12">
+                          <h4 class="text-xl font-bold">Expanded Sources 📰</h4>
+                         <p class="text-slate-600">Integrate Google News and other regional media APIs to provide a more comprehensive view of local trends beyond social media.</p>
+                     </div>
+                     <div class="timeline-item relative pb-12">
+                          <h4 class="text-xl font-bold">Alerts & Notifications 🔔</h4>
+                         <p class="text-slate-600">Allow users to subscribe to push notifications for specific locations or topics, so they never miss a breaking trend.</p>
+                     </div>
+                     <div class="timeline-item relative">
+                          <h4 class="text-xl font-bold">Monetization 💡</h4>
+                         <p class="text-slate-600">Explore sustainable revenue models through media partnerships, premium analytics for businesses, and non-intrusive, location-based ads.</p>
+                     </div>
+                 </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-slate-800 text-slate-400 mt-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center">
+            <p>&copy; 2025 GeoPulse. "A world map where every region tells its story — at your fingertips."</p>
+        </div>
+    </footer>
+
+    <script>
+        const mockData = {
+            USA: {
+                trends: [
+                    { topic: "#Election2025", category: "Politics", volume: 125000 },
+                    { topic: "Super Bowl Winners", category: "Sports", volume: 98000 },
+                    { topic: "New Movie Release", category: "Entertainment", volume: 76000 },
+                    { topic: "Downtown Street Fair", category: "Local", volume: 15000 },
+                    { topic: "Healthcare Bill Debate", category: "Politics", volume: 89000 },
+                    { topic: "All-Star Game Highlights", category: "Sports", volume: 65000 },
+                ]
+            },
+            India: {
+                trends: [
+                    { topic: "#TechSummitDelhi", category: "Local", volume: 85000 },
+                    { topic: "IPL Finals", category: "Sports", volume: 150000 },
+                    { topic: "Bollywood Blockbuster", category: "Entertainment", volume: 110000 },
+                    { topic: "New Metro Line", category: "Local", volume: 45000 },
+                    { topic: "Monsoon Season Updates", category: "Local", volume: 30000 },
+                    { topic: "Parliament Session", category: "Politics", volume: 95000 },
+                ]
+            },
+            UK: {
+                trends: [
+                    { topic: "Premier League Results", category: "Sports", volume: 135000 },
+                    { topic: "#LondonFashionWeek", category: "Entertainment", volume: 92000 },
+                    { topic: "NHS Funding Announcement", category: "Politics", volume: 115000 },
+                    { topic: "Tube Strike Update", category: "Local", volume: 55000 },
+                    { topic: "Royal Family News", category: "Entertainment", volume: 78000 },
+                ]
+            }
+        };
+
+        let currentRegion = 'USA';
+        let currentFilter = 'All';
+        let trendsChart;
+        let audienceChart;
+
+        function getCategoryData(region, filter) {
+            const regionData = mockData[region].trends;
+            const categories = ["Politics", "Sports", "Entertainment", "Local"];
+            let filteredData = regionData;
+
+            if (filter !== 'All') {
+                filteredData = regionData.filter(t => t.category === filter);
+            }
+            
+            const categoryTotals = categories.map(cat => {
+                return filteredData
+                    .filter(t => t.category === cat)
+                    .reduce((sum, t) => sum + t.volume, 0);
+            });
+            
+            return categoryTotals;
+        }
+
+        function updateTrendsList(region, filter) {
+            const trendsList = document.getElementById('trends-list');
+            const regionData = mockData[region].trends;
+            let filteredTrends = regionData;
+
+            if (filter !== 'All') {
+                filteredTrends = regionData.filter(t => t.category === filter);
+            }
+
+            trendsList.innerHTML = '';
+            if (filteredTrends.length === 0) {
+                trendsList.innerHTML = `<li class="text-slate-500">No trends found for this filter.</li>`;
+                return;
+            }
+            
+            filteredTrends.sort((a,b) => b.volume - a.volume).forEach(trend => {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center text-sm p-2 rounded-md hover:bg-slate-100';
+                li.innerHTML = `
+                    <span>
+                        <span class="font-semibold text-sky-700">${trend.topic}</span>
+                        <span class="text-xs text-slate-500 block">${trend.category}</span>
+                    </span>
+                    <span class="font-medium text-slate-600">${(trend.volume / 1000).toFixed(1)}k</span>
+                `;
+                trendsList.appendChild(li);
+            });
+        }
+
+        function updateDashboard() {
+            document.getElementById('trends-title').textContent = `Trending in ${currentRegion}`;
+            const newCategoryData = getCategoryData(currentRegion, currentFilter);
+            trendsChart.data.datasets[0].data = newCategoryData;
+            trendsChart.update();
+            updateTrendsList(currentRegion, currentFilter);
+        }
+
+        document.getElementById('region-selector').addEventListener('click', (e) => {
+            if (e.target.classList.contains('region-btn')) {
+                currentRegion = e.target.dataset.region;
+                document.querySelectorAll('.region-btn').forEach(btn => {
+                    btn.classList.remove('active-btn');
+                    btn.classList.add('inactive-btn');
+                });
+                e.target.classList.add('active-btn');
+                e.target.classList.remove('inactive-btn');
+                updateDashboard();
+            }
+        });
+
+        document.getElementById('filter-selector').addEventListener('click', (e) => {
+            if (e.target.classList.contains('filter-btn')) {
+                currentFilter = e.target.dataset.category;
+                 document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active-btn');
+                    btn.classList.add('inactive-btn');
+                });
+                e.target.classList.add('active-btn');
+                e.target.classList.remove('inactive-btn');
+                updateDashboard();
+            }
+        });
+
+        function createTrendsChart() {
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+            trendsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ["Politics", "Sports", "Entertainment", "Local"],
+                    datasets: [{
+                        label: 'Trend Volume',
+                        data: getCategoryData(currentRegion, currentFilter),
+                        backgroundColor: '#0ea5e9',
+                        borderColor: '#0284c7',
+                        borderWidth: 1,
+                        borderRadius: 5,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                           callbacks: {
+                               label: function(context) {
+                                   return ` ${context.raw.toLocaleString()} mentions`;
+                               }
+                           }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                             ticks: {
+                                callback: function(value) {
+                                    return value / 1000 + 'k';
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createAudienceChart(){
+             const ctx = document.getElementById('audienceChart').getContext('2d');
+             audienceChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Youth', 'Elders', 'Professionals (Journalists, etc.)'],
+                    datasets: [{
+                        label: 'Target Audience',
+                        data: [40, 25, 35],
+                        backgroundColor: [
+                            '#38bdf8',
+                            '#0ea5e9',
+                            '#0284c7'
+                        ],
+                        borderColor: '#f8fafc',
+                        borderWidth: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                           position: 'bottom',
+                        },
+                         tooltip: {
+                           callbacks: {
+                               label: function(context) {
+                                   let label = context.label || '';
+                                   if (label) {
+                                       label += ': ';
+                                   }
+                                   if (context.parsed !== null) {
+                                       label += context.parsed + '%';
+                                   }
+                                   return label;
+                               }
+                           }
+                        }
+                    }
+                }
+             });
+        }
+
+        window.onload = function() {
+            createTrendsChart();
+            createAudienceChart();
+            updateTrendsList(currentRegion, currentFilter);
+        };
+    </script>
+</body>
+</html>
